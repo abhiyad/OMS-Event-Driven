@@ -1,4 +1,5 @@
 package com.store.gateway;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -53,6 +54,7 @@ public class GatewayController {
     public List<Book> getAllBooks(){
         return accountService.getAllBooks();
     }
+
 
     @GetMapping("/search/{isbn}")
     public Book search(@PathVariable("isbn")String isbn){

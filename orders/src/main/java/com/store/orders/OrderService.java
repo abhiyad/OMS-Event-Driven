@@ -10,8 +10,10 @@ import java.util.List;
 @Service
 public class OrderService {
 
+    @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
     private InventoryService inventoryService;
 
     Logger logger = LoggerFactory.getLogger(OrderService.class);
@@ -33,6 +35,9 @@ public class OrderService {
                 inventoryService.blockInventory(order);
                 logger.info("ORDER_SERVICE : Successfully placed the order : " + order.toString());
                 return true;
+            }
+            else{
+                logger.info("ORDER_SERVICE : Not placed, insufficient copies " + order.toString() );
             }
         } catch (Exception e) {
             logger.info("ORDER_SERVICE : Couldn't place the order : " + order.toString());

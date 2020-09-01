@@ -2,10 +2,10 @@ package com.store.orders;
 
 import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -14,22 +14,59 @@ import static org.mockito.Mockito.*;
 class OrdersApplicationTests {
 
 	@Mock
-	private OrderService orderService;
+	private InventoryService inventoryService;
+
+	@Mock
+	private OrderRepository repository;
+
+	@InjectMocks
+	private OrderService service;
 
 	@Test
-	void saveTest() throws NotFoundException {
+	void saveTestValidOrder() throws NotFoundException {
 		CatalogueOrder order = new CatalogueOrder("user","isbn",1,false);
 
-		InventoryService inventoryService = mock(InventoryService.class);
-		OrderRepository orderRepository = mock(OrderRepository.class);
+		//Mocking the inventoryService
 		when(inventoryService.searchInventory("isbn")).thenReturn(new Book("isbn",10));
 		Mockito.doNothing().when(inventoryService).blockInventory(order);
 
-		orderService = new OrderService(inventoryService,orderRepository);
+		//Mocking the repository
+		when(repository.save(order)).thenReturn(order);
+		when(repository.findAllOrderForUser("user")).thenReturn(Collections.singletonList(order));
 
-		orderService.save(order);
-		List<CatalogueOrder> orderList = orderService.findOrderForUser("user");
-		orderList.stream().forEach(o->System.out.println(o.toString()));
+		// Calling the function
+		service.save(order);
+
+		List<CatalogueOrder> actualOrders = service.findOrderForUser("user");
+		List<CatalogueOrder> expectedOrder = Collections.singletonList(order);
+
+		assert (actualOrders.equals(expectedOrder));
+
+	}
+
+	@Test
+	void saveTestInValidOrder() throws NotFoundException {
+		CatalogueOrder order = new CatalogueOrder("user","isbn",10,false);
+
+		//Mocking the inventoryService
+		when(inventoryService.searchInventory("isbn")).thenReturn(new Book("isbn",1));
+		Mockito.doNothing().when(inventoryService).blockInventory(order);
+
+		//Mocking the repository
+		when(repository.save(order)).thenReturn(order);
+		when(repository.findAllOrderForUser("user")).thenReturn(Collections.emptyList());
+
+		// Calling the function
+		service.save(order);
+
+		List<CatalogueOrder> actual = service.findOrderForUser("user");
+		List<CatalogueOrder> expected = Collections.emptyList();
+
+		assert (actual.equals(expected));
+
+
+
+
 	}
 
 }

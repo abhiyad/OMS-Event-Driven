@@ -31,5 +31,19 @@ class InventoryApplicationTests {
 		assertThrows(BookNotFoundException.class,()->bookService.find("isbn2"));
 	}
 
+	@Test
+	void consumeTest(){
+		Book book = new Book("isbn",10);
+
+		when(bookRepository.existsById("isbn")).thenReturn(true);
+		when(bookRepository.findById("isbn")).thenReturn(java.util.Optional.of(new Book("isbn", 12)));
+		when(bookRepository.save(book)).thenReturn(book);
+
+		bookService.consume(book);
+		Book actual = bookService.find("isbn");
+		Book expected = new Book("isbn",12);
+		assert (actual.toString().equals(expected.toString()));
+	}
+
 
 }

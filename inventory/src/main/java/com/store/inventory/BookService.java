@@ -25,28 +25,19 @@ public class BookService {
 
     @StreamListener("input")
     public void consume(Book book){
-        Future<Integer> prevCount = executor.submit(getPreviousCopies(book.getIsbn()));
         logger.info("INVENTORY_SERVICE : Attempting to add Book : " + book.toString());
-        int count = 0 ;
-        try{
-            count = prevCount.get();
-        } catch (Exception e) {
-            logger.error("INVENTORY_SERVICE : Error occurred while attempting to add book :" + book.toString());
-            e.printStackTrace();
-        }
+        int count = getPreviousCopies(book.getIsbn());
         book.setCopies(book.getCopies() + count);
         repository.save(book);
         logger.info("INVENTORY_SERVICE : Book added Successfully .. current status : " + book.toString() );
     }
 
-    public Callable<Integer> getPreviousCopies(String isbn){
-        return()-> {
-            if (repository.existsById(isbn)) {
-                Book book = repository.findById(isbn).orElse(null);
-                return book.getCopies();
-            }
-            return 0;
-        };
+    public int getPreviousCopies(String isbn){
+        if(repository.existsById(isbn)){
+            Book book = repository.findById(isbn).orElse(null);
+            return book.getCopies();
+        }
+        return 0;
     }
 
     public Book find(String isbn){

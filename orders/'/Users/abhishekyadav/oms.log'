@@ -1,0 +1,2 @@
+2020-08-30 21:26:15.937  INFO [OrderService,,,] 6759 --- [main] com.store.orders.OrdersApplication       : No active profile set, falling back to default profiles: default
+2020-08-30 21:26:21.691  INFO [OrderService,,,] 6759 --- [main] com.store.orders.OrdersApplication       : Started OrdersApplication in 6.518 seconds (JVM running for 6.879)

@@ -23,6 +23,12 @@ public class OrderService {
         this.inventoryService = inventoryService;
     }
 
+    public CatalogueOrder findById(Long Id){
+        if(orderRepository.existsById(Id))
+            return orderRepository.findById(Id).orElse(null);
+        return null;
+    }
+
 
 
     public synchronized Boolean save(CatalogueOrder order){
@@ -60,7 +66,7 @@ public class OrderService {
                 Book responseBook = inventoryService.searchInventory(order.getIsbn());
                 if(order.getCopies()<=responseBook.getCopies()){
                     inventoryService.blockInventory(order);
-                    inventoryService.blockInventory(previousOrder);
+                    inventoryService.rollBackInventory(previousOrder);
                     orderRepository.save(order);
                     logger.info("ORDER_SERVICE : Successfully updated the order : " + order.toString());
                     return true;

@@ -116,7 +116,7 @@ class InventoryApplicationTests {
 		actual = bookService.find("isbn2");
 
 		assert (expected.toString().equals(actual.toString()));
-		
+
 	}
 
 

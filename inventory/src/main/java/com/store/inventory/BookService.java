@@ -43,9 +43,11 @@ public class BookService {
             repository.save(book);
         }
         catch (BookNotFoundException e){
+            logger.info("INVENTORY_SERVICE : Book not found for the order : " + order.toString() );
             throw new BookNotFoundException();
         }
         catch (Exception e){
+            logger.info("INVENTORY_SERVICE : Insufficient copies for the order : " + order.toString() );
             throw new OrderNotPlaceException();
         }
     }

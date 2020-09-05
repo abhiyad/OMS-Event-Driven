@@ -7,8 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Collections;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import static org.mockito.Mockito.*;
 
@@ -92,14 +91,12 @@ class OrdersApplicationTests {
 
 		when(inventoryService.searchInventory("isbn_new")).thenReturn(new Book("isbn_new",10));
 		when(inventoryService.searchInventory("isbn_old")).thenReturn(new Book("isbn_old",20));
+		doThrow(RuntimeException.class).when(inventoryService).blockInventory(newOrder);
 		when(repository.existsById(1L)).thenReturn(true);
 		when(repository.findById(1L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
 
-		service.update(newOrder);
-		when(repository.findById(1L)).thenReturn(java.util.Optional.of(prevOrder));
-		CatalogueOrder actual = service.findById(1L);
-		assert(actual.toString().equals(prevOrder.toString()));
+		assertThrows(OrderNotPlacedException.class,()->service.update(newOrder));
 	}
 
 	@Test
@@ -130,9 +127,7 @@ class OrdersApplicationTests {
 		when(repository.findById(2L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
 
-		service.sendOrder(newOrder);
-		when(repository.findById(1L)).thenReturn(null);
-		assertNull(service.findById(1L));
+		assertThrows(OrderNotUpdatedException.class,()->service.sendOrder(newOrder));
 	}
 
 	@Test
@@ -145,8 +140,6 @@ class OrdersApplicationTests {
 		when(repository.findById(1L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
 
-		service.sendOrder(newOrder);
-		CatalogueOrder actual = service.findById(1L);
-		assert(actual.toString().equals(prevOrder.toString()));
+		assertThrows(OrderNotUpdatedException.class,()->service.sendOrder(newOrder));
 	}
 }

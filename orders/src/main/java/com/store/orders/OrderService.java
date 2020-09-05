@@ -1,10 +1,9 @@
 package com.store.orders;
-import org.aspectj.weaver.ast.Or;
+import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import java.util.List;
 
 @Service
@@ -18,85 +17,66 @@ public class OrderService {
 
     Logger logger = LoggerFactory.getLogger(OrderService.class);
 
-    public OrderService(final InventoryService inventoryService, final OrderRepository orderRepository){
+    public OrderService(final InventoryService inventoryService, final OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
         this.inventoryService = inventoryService;
     }
 
-    public CatalogueOrder findById(Long Id){
-        if(orderRepository.existsById(Id))
-            return orderRepository.findById(Id).orElse(null);
-        return null;
+    public CatalogueOrder findById(Long Id) {
+        return orderRepository.findById(Id).orElseThrow(OrderNotFoundException::new);
     }
 
 
-
-    public synchronized Boolean save(CatalogueOrder order){
-        logger.info("ORDER_SERVICE : Attempting to place the order : " + order.toString());
+    public synchronized void save(CatalogueOrder order) {
         try {
-            Book responseBook = inventoryService.searchInventory(order.getIsbn());
-            if (responseBook.getCopies() >= order.getCopies()) {
-                logger.info(responseBook.toString() + " ==================== <<<<<<<<<<<<<<");
-                orderRepository.save(order);
-                inventoryService.blockInventory(order);
-                logger.info("ORDER_SERVICE : Successfully placed the order : " + order.toString());
-                return true;
-            }
-            else{
-                logger.info("ORDER_SERVICE : Not placed, insufficient copies " + order.toString() );
-            }
+            inventoryService.blockInventory(order);
         } catch (Exception e) {
-            logger.info("ORDER_SERVICE : Couldn't place the order : " + order.toString());
-            return false;
+            logger.info("ORDER_SERVICE : Cannot place of the order " + order.toString());
+            throw new OrderNotPlacedException();
         }
-        return false;
+        logger.info("ORDER_SERVICE : Order Placed " + order.toString());
+        orderRepository.save(order);
     }
 
-    public List<CatalogueOrder> findOrderForUser(String username){
+    public List<CatalogueOrder> findOrderForUser(String username) {
         logger.info("ORDER_SERVICE : Finding Order for  User : " + username);
         return orderRepository.findAllOrderForUser(username);
     }
 
-    public synchronized Boolean update(CatalogueOrder order){
-        logger.info("ORDER_SERVICE : Attempting to update the order : " + order.toString());
-        if(orderRepository.existsById(order.getId())) {
-            try {
-                CatalogueOrder previousOrder = orderRepository.findById(order.getId()).orElse(null);
-                logger.info("ORDER_SERVICE : Found previous order : " + previousOrder.toString());
-                Book responseBook = inventoryService.searchInventory(order.getIsbn());
-                if(order.getCopies()<=responseBook.getCopies()){
-                    inventoryService.blockInventory(order);
-                    inventoryService.rollBackInventory(previousOrder);
-                    orderRepository.save(order);
-                    logger.info("ORDER_SERVICE : Successfully updated the order : " + order.toString());
-                    return true;
-                }
-            } catch (Exception e) {
-                logger.info("ORDER_SERVICE : Failed to updated the order : " + order.toString());
-                return false;
-            }
+    public synchronized void update(CatalogueOrder order) {
+        try {
+            CatalogueOrder previousOrder = findById(order.getId());
+            Book responseBook = inventoryService.searchInventory(order.getIsbn());
+            inventoryService.blockInventory(order);
+            inventoryService.rollBackInventory(previousOrder);
+            orderRepository.save(order);
+        } catch (OrderNotFoundException e) {
+            logger.info("ORDER_SERVICE : Cannot find Order with this ID : " + order.toString());
+            throw new OrderNotPlacedException();
+        } catch (NotFoundException e){
+            logger.info("ORDER_SERVICE : Cannot find the book requested " + order.toString());
+            throw new OrderNotPlacedException();
+        } catch (Exception e){
+            logger.info("ORDER_SERVICE : Insufficient copies in Inventory " + order.toString());
+            throw new OrderNotPlacedException();
         }
-        else
-            logger.info("ORDER_SERVICE : Couldn't find previous order for this ID : " + order.toString());
-
-        return false;
     }
 
-    public boolean sendOrder(CatalogueOrder order) {
-        logger.info("ORDER_SERVICE : Attempting to send the order : " + order.toString());
-        if(orderRepository.existsById(order.getId())) {
-            CatalogueOrder previousOrder = orderRepository.findById(order.getId()).orElse(null);
-            if(previousOrder.toString().equals(order.toString())){
-                order.setSent(true);
-                orderRepository.save(order);
-                logger.info("ORDER_SERVICE : Successfully sent the order : " + order.toString());
-                return true;
-            }
-            else
-                logger.info("ORDER_SERVICE : Validation failed with previous order .. PREVIOUS : " + previousOrder.toString() + " THIS : " + order.toString());
+    public void sendOrder(CatalogueOrder order) {
+        try {
+            CatalogueOrder previousOrder = findById(order.getId());
+            if(!previousOrder.equalOrder(order))
+                throw new OrderNotUpdatedException();
+            order.setSent(true);
+            orderRepository.save(order);
+            logger.info("ORDER_SERVICE : Successfully sent the order : " + order.toString());
+        } catch (Exception e) {
+            logger.info("ORDER_SERVICE : Cannot find the previous Order: " + order.toString());
+            throw new OrderNotUpdatedException();
         }
-        else
-            logger.info("ORDER_SERVICE : Couldn't find order for this ID : " + order.toString());
-        return false;
     }
+
 }
+
+
+

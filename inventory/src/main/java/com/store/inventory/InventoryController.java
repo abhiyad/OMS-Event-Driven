@@ -12,11 +12,7 @@ public class InventoryController {
 
     @GetMapping("/search/isbn/{isbn}")
     public Book search(@PathVariable("isbn")String isbn){
-        try{
-            return bookService.find(isbn);
-        } catch (Exception e) {
-            throw new BookNotFoundException();
-        }
+       return bookService.find(isbn);
     }
 
     @GetMapping("/list")
@@ -31,7 +27,6 @@ public class InventoryController {
 
     @PostMapping("/rollback/order")
     public void rollBack(@RequestBody CatalogueOrder order){
-        System.out.println("In ROLL BACK");
         bookService.rollBack(order);
     }
 

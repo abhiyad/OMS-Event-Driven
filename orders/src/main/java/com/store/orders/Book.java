@@ -17,10 +17,6 @@ public class Book {
     public Book() {
     }
 
-    public void setCopies(int copies) {
-        this.copies = copies;
-    }
-
     public int getCopies() {
         return copies;
     }
@@ -34,9 +30,6 @@ public class Book {
         return isbn;
     }
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
 
     @Override
     public String toString(){

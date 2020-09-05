@@ -5,6 +5,7 @@ import com.sun.istack.NotNull;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Min;
 
 @Entity
 @Table(name="Book")
@@ -12,9 +13,12 @@ public class Book {
     @Id
     @NotNull
     private String isbn;
+    @Min(value = 0)
     private int copies;
 
-    public Book() {
+    public Book(String isbn, int copies) {
+        this.isbn = isbn;
+        this.copies = copies;
     }
 
     public void setCopies(int copies) {
@@ -23,11 +27,6 @@ public class Book {
 
     public int getCopies() {
         return copies;
-    }
-
-    public Book(String isbn, int copies) {
-        this.isbn = isbn;
-        this.copies = copies;
     }
 
     public String getIsbn() {

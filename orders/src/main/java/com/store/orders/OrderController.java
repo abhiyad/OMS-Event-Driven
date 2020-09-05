@@ -2,6 +2,7 @@ package com.store.orders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.ws.rs.POST;
 import java.util.List;
 
 @RestController
@@ -16,21 +17,18 @@ public class OrderController {
     }
 
     @PostMapping("/create")
-    public CatalogueOrder create(@RequestBody CatalogueOrder order){
-        if(orderService.save(order))
-            return order;
-        else
-            throw new OrderNotPlacedException();
-
+    public void create(@RequestBody CatalogueOrder order){
+        orderService.save(order);
     }
 
     @PostMapping("/update")
-    public CatalogueOrder update(@RequestBody CatalogueOrder order){
-        if(orderService.update(order))
-            return order;
-        else
-            throw new OrderNotPlacedException();
+    public void update(@RequestBody CatalogueOrder order){
+        orderService.update(order);
+    }
 
+    @PostMapping("/send")
+    public void send(@RequestBody CatalogueOrder order){
+        orderService.sendOrder(order);
     }
 
 

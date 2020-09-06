@@ -1,5 +1,10 @@
 package com.store.inventory;
 
+import com.store.inventory.domain.Book;
+import com.store.inventory.domain.CatalogueOrder;
+import com.store.inventory.exceptions.BookNotFoundException;
+import com.store.inventory.repository.BookRepository;
+import com.store.inventory.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

@@ -50,19 +50,13 @@ class OrdersApplicationTests {
 
 		//Mocking the inventoryService
 		when(inventoryService.searchInventory("isbn")).thenReturn(new Book("isbn",1));
-		Mockito.doNothing().when(inventoryService).blockInventory(order);
+		doThrow(RuntimeException.class).when(inventoryService).blockInventory(order);
 
 		//Mocking the repository
 		when(repository.save(order)).thenReturn(order);
-		when(repository.findAllOrderForUser("user")).thenReturn(Collections.emptyList());
 
 		// Calling the function
-		service.save(order);
-
-		List<CatalogueOrder> actual = service.findOrderForUser("user");
-		List<CatalogueOrder> expected = Collections.emptyList();
-
-		assert (actual.equals(expected));
+		assertThrows(OrderNotPlacedException.class,()->service.save(order));
 	}
 
 	@Test
@@ -73,7 +67,6 @@ class OrdersApplicationTests {
 
 		when(inventoryService.searchInventory("isbn_new")).thenReturn(new Book("isbn_new",10));
 		when(inventoryService.searchInventory("isbn_old")).thenReturn(new Book("isbn_old",20));
-		when(repository.existsById(1L)).thenReturn(true);
 		when(repository.findById(1L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
 
@@ -92,7 +85,6 @@ class OrdersApplicationTests {
 		when(inventoryService.searchInventory("isbn_new")).thenReturn(new Book("isbn_new",10));
 		when(inventoryService.searchInventory("isbn_old")).thenReturn(new Book("isbn_old",20));
 		doThrow(RuntimeException.class).when(inventoryService).blockInventory(newOrder);
-		when(repository.existsById(1L)).thenReturn(true);
 		when(repository.findById(1L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
 
@@ -105,7 +97,6 @@ class OrdersApplicationTests {
 		CatalogueOrder prevOrder = new CatalogueOrder("user","isbn",3,false);
 		newOrder.setID(1L); prevOrder.setID(1L);
 
-		when(repository.existsById(1L)).thenReturn(true);
 		when(repository.findById(1L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
 
@@ -122,7 +113,7 @@ class OrdersApplicationTests {
 		CatalogueOrder prevOrder = new CatalogueOrder("user","isbn",3,false);
 		newOrder.setID(1L); prevOrder.setID(2L);
 
-		when(repository.existsById(1L)).thenReturn(false);
+		doThrow(OrderNotFoundException.class).when(repository).findById(1L);
 		when(repository.existsById(2L)).thenReturn(true);
 		when(repository.findById(2L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
@@ -136,7 +127,6 @@ class OrdersApplicationTests {
 		CatalogueOrder prevOrder = new CatalogueOrder("user","isbn2",3,false);
 		newOrder.setID(1L); prevOrder.setID(1L);
 
-		when(repository.existsById(1L)).thenReturn(true);
 		when(repository.findById(1L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
 

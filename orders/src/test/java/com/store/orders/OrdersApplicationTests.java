@@ -6,12 +6,14 @@ import com.store.orders.exceptions.OrderNotFoundException;
 import com.store.orders.exceptions.OrderNotPlacedException;
 import com.store.orders.exceptions.OrderNotUpdatedException;
 import com.store.orders.repository.OrderRepository;
-import com.store.orders.service.InventoryService;
+import com.store.orders.service.InventoryClient;
 import com.store.orders.service.OrderService;
+import com.store.orders.service.OrderServiceImpl;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,25 +21,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@RunWith(MockitoJUnitRunner.class)
 class OrdersApplicationTests {
 
-	@Mock
-	private InventoryService inventoryService;
-
-	@Mock
-	private OrderRepository repository;
-
-	@InjectMocks
-	private OrderService service;
+	private InventoryClient inventoryClient = mock(InventoryClient.class);
+	private OrderRepository repository = mock (OrderRepository.class);
+	private OrderService service = new OrderServiceImpl(inventoryClient,repository);
 
 	@Test
 	void saveTestValidOrder() throws NotFoundException {
 		CatalogueOrder order = new CatalogueOrder("user","isbn",1,false);
 
 		//Mocking the inventoryService
-		when(inventoryService.searchInventory("isbn")).thenReturn(new Book("isbn",10));
-		Mockito.doNothing().when(inventoryService).blockInventory(order);
+		when(inventoryClient.searchInventory("isbn")).thenReturn(new Book("isbn",10));
+		Mockito.doNothing().when(inventoryClient).blockInventory(order);
 
 		//Mocking the repository
 		when(repository.save(order)).thenReturn(order);
@@ -57,8 +54,8 @@ class OrdersApplicationTests {
 		CatalogueOrder order = new CatalogueOrder("user","isbn",10,false);
 
 		//Mocking the inventoryService
-		when(inventoryService.searchInventory("isbn")).thenReturn(new Book("isbn",1));
-		doThrow(RuntimeException.class).when(inventoryService).blockInventory(order);
+		when(inventoryClient.searchInventory("isbn")).thenReturn(new Book("isbn",1));
+		doThrow(RuntimeException.class).when(inventoryClient).blockInventory(order);
 
 		//Mocking the repository
 		when(repository.save(order)).thenReturn(order);
@@ -73,8 +70,8 @@ class OrdersApplicationTests {
 		CatalogueOrder prevOrder = new CatalogueOrder("user","isbn_old",3,false);
 		newOrder.setID(1L); prevOrder.setID(1L);
 
-		when(inventoryService.searchInventory("isbn_new")).thenReturn(new Book("isbn_new",10));
-		when(inventoryService.searchInventory("isbn_old")).thenReturn(new Book("isbn_old",20));
+		when(inventoryClient.searchInventory("isbn_new")).thenReturn(new Book("isbn_new",10));
+		when(inventoryClient.searchInventory("isbn_old")).thenReturn(new Book("isbn_old",20));
 		when(repository.findById(1L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
 
@@ -90,9 +87,9 @@ class OrdersApplicationTests {
 		CatalogueOrder prevOrder = new CatalogueOrder("user","isbn_old",3,false);
 		newOrder.setID(1L); prevOrder.setID(1L);
 
-		when(inventoryService.searchInventory("isbn_new")).thenReturn(new Book("isbn_new",10));
-		when(inventoryService.searchInventory("isbn_old")).thenReturn(new Book("isbn_old",20));
-		doThrow(RuntimeException.class).when(inventoryService).blockInventory(newOrder);
+		when(inventoryClient.searchInventory("isbn_new")).thenReturn(new Book("isbn_new",10));
+		when(inventoryClient.searchInventory("isbn_old")).thenReturn(new Book("isbn_old",20));
+		doThrow(RuntimeException.class).when(inventoryClient).blockInventory(newOrder);
 		when(repository.findById(1L)).thenReturn(java.util.Optional.of(prevOrder));
 		when(repository.save(newOrder)).thenReturn(newOrder);
 

@@ -25,7 +25,11 @@ public class BookService {
     }
 
     @StreamListener("input")
+    /**
+     *
+     */
     public void consume(Book book){
+
         book.setCopies(book.getCopies() + getPreviousCopies(book.getIsbn()));
         repository.save(book);
         logger.info("INVENTORY_SERVICE : Book added Successfully .. current status : " + book.toString() );

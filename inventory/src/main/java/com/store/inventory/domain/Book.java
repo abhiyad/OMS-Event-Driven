@@ -1,5 +1,7 @@
 package com.store.inventory.domain;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.istack.NotNull;
 
 import javax.persistence.Entity;
@@ -37,7 +39,13 @@ public class Book {
 
     @Override
     public String toString(){
-        return "{ ISBN : " + this.isbn + " COPIES : " + this.copies + " }";
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

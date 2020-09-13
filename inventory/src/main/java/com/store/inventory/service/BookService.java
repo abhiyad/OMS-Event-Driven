@@ -9,11 +9,11 @@ import java.util.List;
 
 @Service
 public interface BookService {
-    void consume(Book book);
     Book find(String isbn)throws BookNotFoundException;
     List<Book> listAll();
     void createOrder(CatalogueOrder order);
     void rollBack(CatalogueOrder order);
     int getPreviousCopies(String isbn);
     void deleteAll();
+    void add();
 }

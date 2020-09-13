@@ -34,4 +34,7 @@ public class InventoryController {
         bookService.rollBack(order);
     }
 
+    @PostMapping("/api/add")
+    public void addToInventory(){bookService.add();}
+
 }

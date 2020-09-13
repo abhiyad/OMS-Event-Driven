@@ -1,10 +1,18 @@
 package com.store.inbound.domain;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+
+
 public class Book {
 
     private String isbn;
     private int copies;
+
+    @Autowired
+    private ObjectMapper mapper;
 
     public Book() {
     }
@@ -32,7 +40,13 @@ public class Book {
 
     @Override
     public String toString(){
-        return "{ ISBN : " + this.isbn + " COPIES : " + this.copies + " }";
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

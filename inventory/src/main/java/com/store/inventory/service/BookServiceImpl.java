@@ -7,7 +7,6 @@ import com.store.inventory.repository.BookRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +16,9 @@ public class BookServiceImpl implements BookService {
 
     @Autowired
     private BookRepository repository;
+
+    @Autowired
+    private SQSMessageService sqsMessageService;
 
     public BookServiceImpl(final BookRepository repository){
         this.repository = repository;
@@ -28,12 +30,12 @@ public class BookServiceImpl implements BookService {
         repository.deleteAll();
     }
 
-    @StreamListener("input")
-    public void consume(Book book){
-
-        book.setCopies(book.getCopies() + getPreviousCopies(book.getIsbn()));
-        repository.save(book);
-        logger.info("INVENTORY_SERVICE : Book added Successfully .. current status : " + book.toString() );
+    @Override
+    public void add() {
+        sqsMessageService.receive().stream().forEach(book -> {
+            book.setCopies(book.getCopies() + getPreviousCopies(book.getIsbn()));
+            repository.save(book);
+        });
     }
 
     public Book find(String isbn)throws BookNotFoundException {

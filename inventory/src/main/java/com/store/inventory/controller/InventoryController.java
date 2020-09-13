@@ -1,7 +1,7 @@
 package com.store.inventory.controller;
 import com.store.inventory.domain.Book;
 import com.store.inventory.domain.CatalogueOrder;
-import com.store.inventory.service.BookService;
+import com.store.inventory.service.BookServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +12,7 @@ import java.util.List;
 public class InventoryController {
 
     @Autowired
-    private BookService bookService;
+    private BookServiceImpl bookService;
 
     @GetMapping("/api/search/{isbn}")
     public Book search(@PathVariable("isbn")String isbn){

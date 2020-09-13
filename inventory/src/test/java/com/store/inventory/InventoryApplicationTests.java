@@ -5,6 +5,7 @@ import com.store.inventory.domain.CatalogueOrder;
 import com.store.inventory.exceptions.BookNotFoundException;
 import com.store.inventory.repository.BookRepository;
 import com.store.inventory.service.BookService;
+import com.store.inventory.service.BookServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,12 +16,8 @@ import static org.mockito.Mockito.*;
 
 
 class InventoryApplicationTests {
-	@Mock
-	public BookRepository bookRepository;
-
-	@InjectMocks
-	private BookService bookService;
-
+	private BookRepository bookRepository = mock (BookRepository.class);
+	private BookService bookService = new BookServiceImpl(bookRepository);
 
 	@Test
 	void consumeTest(){

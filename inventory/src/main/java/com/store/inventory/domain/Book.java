@@ -35,10 +35,6 @@ public class Book {
         return isbn;
     }
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
-
     @Override
     public String toString(){
         return "{ ISBN : " + this.isbn + " COPIES : " + this.copies + " }";
